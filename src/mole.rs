@@ -79,7 +79,6 @@ fn mole_movement(
         let mut next_ypos = mole_transform.translation.y;
 
         if keyboard_input.pressed(KeyCode::Space) {
-            println!("{:?} key pressed.", KeyCode::Space);
             next_ypos = next_ypos + crate::PIXELS_PER_METER * 0.01;
         }
 
