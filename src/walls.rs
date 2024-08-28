@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{color::palettes::css::*, prelude::*};
 use bevy_prototype_lyon::prelude::*;
 use bevy_rapier2d::prelude::*;
 
@@ -32,7 +32,7 @@ fn spawn_walls(mut commands: Commands) {
                 path: GeometryBuilder::build_as(&shape_top_and_bottom_wall),
                 ..default()
             },
-            Fill::color(Color::TEAL),
+            Fill::color(TEAL),
         ))
         .insert(RigidBody::Fixed)
         .insert(Collider::cuboid(
@@ -55,7 +55,7 @@ fn spawn_walls(mut commands: Commands) {
                 path: GeometryBuilder::build_as(&shape_top_and_bottom_wall),
                 ..default()
             },
-            Fill::color(Color::TEAL),
+            Fill::color(TEAL),
         ))
         .insert(RigidBody::Fixed)
         .insert(Collider::cuboid(
@@ -81,7 +81,7 @@ fn spawn_walls(mut commands: Commands) {
                 path: GeometryBuilder::build_as(&shape_left_and_right_wall),
                 ..default()
             },
-            Fill::color(Color::TEAL),
+            Fill::color(TEAL),
         ))
         .insert(RigidBody::Fixed)
         .insert(Collider::cuboid(
@@ -98,7 +98,7 @@ fn spawn_walls(mut commands: Commands) {
                 path: GeometryBuilder::build_as(&shape_left_and_right_wall),
                 ..default()
             },
-            Fill::color(Color::TEAL),
+            Fill::color(TEAL),
         ))
         .insert(RigidBody::Fixed)
         .insert(Collider::cuboid(

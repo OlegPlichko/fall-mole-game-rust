@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{color::palettes::css::*, prelude::*};
 use bevy_prototype_lyon::prelude::*;
 use bevy_rapier2d::prelude::*;
 
@@ -34,8 +34,8 @@ fn spawn_mole(mut commands: Commands) {
                 path: GeometryBuilder::build_as(&shape_mole),
                 ..default()
             },
-            Fill::color(Color::BLACK),
-            Stroke::new(Color::TEAL, 2.0),
+            Fill::color(DARK_CYAN),
+            Stroke::new(BLACK, 10.0),
         ))
         .insert(RigidBody::Dynamic)
         .insert(Sleeping::disabled())

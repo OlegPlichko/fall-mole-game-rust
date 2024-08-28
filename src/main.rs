@@ -13,10 +13,18 @@ use walls::*;
 
 pub const PIXELS_PER_METER: f32 = 492.3;
 
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash, States)]
+enum AppState {
+    #[default]
+    Setup,
+    Finished,
+}
+
 fn main() {
+    let mut app = App::new();
+    // Use `SubApp::new()` instead of `App::new()`.
+    let mut sub_app = SubApp::new();
     App::new()
-        .insert_resource(Msaa::default())
-        .insert_resource(ClearColor(Color::rgb(0.0, 0.0, 0.0)))
         .add_plugins(DefaultPlugins.set(WindowPlugin {
             primary_window: Some(Window {
                 title: "Fall Mole".into(),
@@ -28,10 +36,14 @@ fn main() {
             }),
             ..default()
         }))
+        .init_state::<AppState>()
+        .add_systems(OnEnter(AppState::Setup),load_textures)
+        .add_systems(OnEnter(AppState::Finished), setup)
+        .insert_resource(Msaa::default())
+        .insert_resource(ClearColor(Color::srgb(0.0, 0.0, 0.0)))
         .add_plugins(WallsPlugin)
         .add_plugins(MolePlugin)
         .add_plugins(ShapePlugin)
-        .add_systems(Startup,setup)
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(
             PIXELS_PER_METER,
         ))
@@ -45,3 +57,5 @@ fn setup(mut commands: Commands, mut rapier_config: ResMut<RapierConfiguration>)
 
     commands.spawn(Camera2dBundle::default());
 }
+
+fn load_textures() {}
