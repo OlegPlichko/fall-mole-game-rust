@@ -2,7 +2,6 @@ use bevy::{
     prelude::*,
     window::{PresentMode},
 };
-use bevy_prototype_lyon::prelude::*;
 use bevy_rapier2d::prelude::*;
 
 mod mole;
@@ -20,33 +19,29 @@ enum AppState {
     Finished,
 }
 
+const COLOR_FLOOR: Color = Color::rgb(0.45, 0.55, 0.66);
+const WINDOW_WIDTH: f32 = 1024.0;
+const WINDOW_HEIGHT: f32 = 720.0;
+pub const WINDOW_BOTTOM_Y: f32 = WINDOW_HEIGHT / -2.0;
+pub const WINDOW_LEFT_X: f32 = WINDOW_WIDTH / -2.0;
+const FLOOR_THICKNESS: f32 = 10.0;
+
 fn main() {
-    let mut app = App::new();
-    // Use `SubApp::new()` instead of `App::new()`.
-    let mut sub_app = SubApp::new();
     App::new()
-        .add_plugins(DefaultPlugins.set(WindowPlugin {
-            primary_window: Some(Window {
-                title: "Fall Mole".into(),
-                resolution: (1280., 720.).into(),
-                present_mode: PresentMode::AutoVsync,
-                // Tells wasm not to override default event handling, like F5, Ctrl+R etc.
-                prevent_default_event_handling: false,
-                ..default()
-            }),
-            ..default()
-        }))
-        .init_state::<AppState>()
-        .add_systems(OnEnter(AppState::Setup),load_textures)
-        .add_systems(OnEnter(AppState::Finished), setup)
-        .insert_resource(Msaa::default())
-        .insert_resource(ClearColor(Color::srgb(0.0, 0.0, 0.0)))
+        .add_plugins(DefaultPlugins)
+        .add_systems(Startup, setup)
+        //.init_state::<AppState>()
+        //.add_systems(OnEnter(AppState::Setup),load_textures)
+        //.add_systems(OnEnter(AppState::Finished), setup)
+        //.insert_resource(Msaa::default())
+        //.insert_resource(ClearColor(Color::srgb(0.0, 0.0, 0.0)))
         .add_plugins(WallsPlugin)
         .add_plugins(MolePlugin)
-        .add_plugins(ShapePlugin)
+        //.add_plugins(ShapePlugin)
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(
             PIXELS_PER_METER,
         ))
+        .add_plugins(RapierDebugRenderPlugin::default())
         .run();
 }
 
@@ -56,6 +51,19 @@ fn setup(mut commands: Commands, mut rapier_config: ResMut<RapierConfiguration>)
     rapier_config.gravity = Vec2::new(0.0, -520.0);
 
     commands.spawn(Camera2dBundle::default());
+    /*commands
+        .spawn(SpriteBundle {
+            sprite: Sprite {
+                color: COLOR_FLOOR,
+                ..Default::default()
+            },
+            transform: Transform {
+                translation: Vec3::new(0.0, WINDOW_BOTTOM_Y + (FLOOR_THICKNESS / 2.0), 0.0),
+                scale: Vec3::new(WINDOW_WIDTH, FLOOR_THICKNESS, 1.0),
+                ..Default::default()
+            },
+            ..Default::default()
+        });*/
 }
 
 fn load_textures() {}

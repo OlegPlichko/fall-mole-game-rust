@@ -17,31 +17,29 @@ impl Plugin for MolePlugin {
 #[derive(Component)]
 struct Mole;
 
-fn spawn_mole(mut commands: Commands) {
-    let mole_pos = Vec2::new(
+fn spawn_mole(mut commands: Commands, asset_server: Res<AssetServer>) {
+    let mole_pos = Vec3::new(
         crate::PIXELS_PER_METER * 0.1,
         crate::PIXELS_PER_METER * -0.2,
+        0.0,
     );
 
     let shape_mole = shapes::Circle {
         radius: crate::PIXELS_PER_METER * 0.03,
         center: Vec2::ZERO,
     };
-
+    
     commands
-        .spawn((
-            ShapeBundle {
-                path: GeometryBuilder::build_as(&shape_mole),
-                ..default()
-            },
-            Fill::color(DARK_CYAN),
-            Stroke::new(BLACK, 10.0),
-        ))
+        .spawn(SpriteBundle {
+            texture: asset_server.load("bevy_bird_dark.png"),
+            //transform: Transform::from_xyz(0.0, 0.0, 0.0).with_scale(Vec3::splat(1.1)),
+            ..default()
+        })
         .insert(RigidBody::Dynamic)
         .insert(Sleeping::disabled())
         .insert(Ccd::enabled())
         .insert(Collider::ball(shape_mole.radius))
-        .insert(Transform::from_xyz(mole_pos.x, mole_pos.y, 0.0))
+        //.insert(Transform::from_xyz(mole_pos.x, mole_pos.y, 0.0))
         .insert(ActiveEvents::COLLISION_EVENTS)
         .insert(Restitution::coefficient(0.7))
         .insert(Mole);
@@ -52,6 +50,7 @@ fn handle_mole_intersections_with_bottom_wall(
     query_mole: Query<Entity, With<Mole>>,
     query_bottom_wall: Query<Entity, With<BottomWall>>,
     mut commands: Commands,
+    asset_server: Res<AssetServer>,
 ) {
     let mut should_spawn_mole = false;
 
@@ -66,7 +65,7 @@ fn handle_mole_intersections_with_bottom_wall(
     }
 
     if should_spawn_mole {
-        spawn_mole(commands);
+        spawn_mole(commands, asset_server);
     }
 }
 

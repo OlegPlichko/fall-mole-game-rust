@@ -15,6 +15,9 @@ pub struct BottomWall;
 
 fn spawn_walls(mut commands: Commands) {
     //Spawn outer wall
+    const COLOR_FLOOR: Color = Color::rgb(0.45, 0.55, 0.66);
+    const WINDOW_WIDTH: f32 = 492.3 * 0.73;
+    const FLOOR_THICKNESS: f32 = 492.3 * 0.03;
     //Spawn top and bottom wall
     let shape_top_and_bottom_wall = shapes::Rectangle {
         extents: Vec2::new(
@@ -27,24 +30,29 @@ fn spawn_walls(mut commands: Commands) {
     //Spawn bottom wall
     let bottom_wall_pos = Vec2::new(0.0, crate::PIXELS_PER_METER * -0.64);
     commands
-        .spawn((
-            ShapeBundle {
-                path: GeometryBuilder::build_as(&shape_top_and_bottom_wall),
-                ..default()
+        .spawn(SpriteBundle {
+            sprite: Sprite {
+                color: COLOR_FLOOR,
+                ..Default::default()
             },
-            Fill::color(TEAL),
-        ))
+            transform: Transform {
+                translation: Vec3::new(bottom_wall_pos.x, bottom_wall_pos.y + (FLOOR_THICKNESS / 2.0), 0.0),
+                scale: Vec3::new(WINDOW_WIDTH, FLOOR_THICKNESS, 1.0),
+                ..Default::default()
+            },
+            ..Default::default()
+        })
         .insert(RigidBody::Fixed)
         .insert(Collider::cuboid(
             shape_top_and_bottom_wall.extents.x / 2.0,
             shape_top_and_bottom_wall.extents.y / 2.0,
         ))
         //.insert(Sensor)
-        .insert(Transform::from_xyz(
-            bottom_wall_pos.x,
-            bottom_wall_pos.y,
-            0.0,
-        ))
+        //.insert(Transform::from_xyz(
+        //    bottom_wall_pos.x,
+        //    bottom_wall_pos.y,
+        //    0.0,
+        //))
         .insert(BottomWall);
 
     //Spawn top wall
