@@ -30,7 +30,7 @@ fn main() {
         //    ..default()
         //})
         .insert_resource(RapierConfiguration {
-            gravity: Vec2::new(0.0, -2000.0),
+            gravity: Vec2::new(0.0, -1500.0),
             physics_pipeline_active: true,
             query_pipeline_active: true,
             timestep_mode: TimestepMode::Variable {

@@ -31,23 +31,24 @@ pub struct PlayerBundle {
 
 pub fn player_movement(
     input: Res<ButtonInput<KeyCode>>,
-    mut query: Query<(&mut Velocity, &mut Climber, &GroundDetection), With<Player>>,
+    mut query: Query<(&mut Velocity, &mut Climber, &GroundDetection), With<Player>>, 
 ) {
     for (mut velocity, mut climber, ground_detection) in &mut query {
-        let right = if input.pressed(KeyCode::KeyD) { 1. } else { 0. };
-        let left = if input.pressed(KeyCode::KeyA) { 1. } else { 0. };
+        let right = if input.pressed(KeyCode::ArrowRight) { 1. } else { 0. };
+        let left = if input.pressed(KeyCode::ArrowLeft) { 1. } else { 0. };
+        let multiplayer = right - left;
 
-        velocity.linvel.x = (right - left) * 200.;
+        velocity.linvel.x = multiplayer * 200.;
 
         if climber.intersecting_climbables.is_empty() {
             climber.climbing = false;
-        } else if input.just_pressed(KeyCode::KeyW) || input.just_pressed(KeyCode::KeyS) {
+        } else if input.just_pressed(KeyCode::ArrowUp) || input.just_pressed(KeyCode::KeyS) {
             climber.climbing = true;
         }
 
         if climber.climbing {
-            let up = if input.pressed(KeyCode::KeyW) { 1. } else { 0. };
-            let down = if input.pressed(KeyCode::KeyS) { 1. } else { 0. };
+            let up = if input.pressed(KeyCode::ArrowUp) { 1. } else { 0. };
+            let down = if input.pressed(KeyCode::ArrowDown) { 1. } else { 0. };
 
             velocity.linvel.y = (up - down) * 200.;
         }

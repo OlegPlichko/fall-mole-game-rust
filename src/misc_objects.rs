@@ -17,11 +17,18 @@ pub struct PumpkinsBundle {
     pub sprite_sheet_bundle: LdtkSpriteSheetBundle,
 }
 
+#[derive(Clone, Default, Bundle, LdtkEntity)]
+pub struct NPCBundle {
+    #[sprite_sheet_bundle(no_grid)]
+    pub sprite_sheet_bundle: LdtkSpriteSheetBundle,
+}
+
 pub struct MiscObjectsPlugin;
 
 impl Plugin for MiscObjectsPlugin {
     fn build(&self, app: &mut App) {
         app.register_ldtk_entity::<ChestBundle>("Chest")
-            .register_ldtk_entity::<PumpkinsBundle>("Pumpkins");
+            .register_ldtk_entity::<PumpkinsBundle>("Pumpkins")
+            .register_ldtk_entity::<NPCBundle>("NPC");
     }
 }
