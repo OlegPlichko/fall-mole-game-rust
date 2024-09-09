@@ -1,69 +1,62 @@
-use bevy::{
-    prelude::*,
-    window::{PresentMode},
-};
+// This example shows off a more in-depth implementation of a game with `bevy_ecs_ldtk`.
+// Please run with `--release`.
+
+use bevy::prelude::*;
+use bevy_ecs_ldtk::prelude::*;
+
 use bevy_rapier2d::prelude::*;
 
-mod mole;
-use mole::*;
-
+mod camera;
+mod climbing;
+/// Bundles for auto-loading Rapier colliders as part of the level
+mod colliders;
+mod enemy;
+/// Handles initialization and switching levels
+mod game_flow;
+mod ground_detection;
+mod inventory;
+mod misc_objects;
+mod player;
 mod walls;
-use walls::*;
-
-pub const PIXELS_PER_METER: f32 = 492.3;
-
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash, States)]
-enum AppState {
-    #[default]
-    Setup,
-    Finished,
-}
-
-const COLOR_FLOOR: Color = Color::rgb(0.45, 0.55, 0.66);
-const WINDOW_WIDTH: f32 = 1024.0;
-const WINDOW_HEIGHT: f32 = 720.0;
-pub const WINDOW_BOTTOM_Y: f32 = WINDOW_HEIGHT / -2.0;
-pub const WINDOW_LEFT_X: f32 = WINDOW_WIDTH / -2.0;
-const FLOOR_THICKNESS: f32 = 10.0;
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins)
-        .add_systems(Startup, setup)
-        //.init_state::<AppState>()
-        //.add_systems(OnEnter(AppState::Setup),load_textures)
-        //.add_systems(OnEnter(AppState::Finished), setup)
-        //.insert_resource(Msaa::default())
-        //.insert_resource(ClearColor(Color::srgb(0.0, 0.0, 0.0)))
-        .add_plugins(WallsPlugin)
-        .add_plugins(MolePlugin)
-        //.add_plugins(ShapePlugin)
-        .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(
-            PIXELS_PER_METER,
+        .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
+        .add_plugins((
+            LdtkPlugin,
+            RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0),
         ))
-        .add_plugins(RapierDebugRenderPlugin::default())
+        //.add_plugins(RapierDebugRenderPlugin {
+        //    ..default()
+        //})
+        .insert_resource(RapierConfiguration {
+            gravity: Vec2::new(0.0, -2000.0),
+            physics_pipeline_active: true,
+            query_pipeline_active: true,
+            timestep_mode: TimestepMode::Variable {
+                max_dt: 1.0 / 60.0,
+                time_scale: 1.0,
+                substeps: 1,
+            },
+            scaled_shape_subdivision: 10,
+            force_update_from_transform_changes: false,
+        })
+        .insert_resource(LevelSelection::Uid(0))
+        .insert_resource(LdtkSettings {
+            level_spawn_behavior: LevelSpawnBehavior::UseWorldTranslation {
+                load_level_neighbors: true,
+            },
+            set_clear_color: SetClearColor::FromLevelBackground,
+            ..Default::default()
+        })
+        .add_plugins(game_flow::GameFlowPlugin)
+        .add_plugins(walls::WallPlugin)
+        .add_plugins(ground_detection::GroundDetectionPlugin)
+        .add_plugins(climbing::ClimbingPlugin)
+        .add_plugins(player::PlayerPlugin)
+        .add_plugins(enemy::EnemyPlugin)
+        .add_systems(Update, inventory::dbg_print_inventory)
+        .add_systems(Update, camera::camera_fit_inside_current_level)
+        .add_plugins(misc_objects::MiscObjectsPlugin)
         .run();
 }
-
-fn setup(mut commands: Commands, mut rapier_config: ResMut<RapierConfiguration>) {
-    // Set gravity to x and spawn camera.
-    //rapier_config.gravity = Vector2::zeros();
-    rapier_config.gravity = Vec2::new(0.0, -520.0);
-
-    commands.spawn(Camera2dBundle::default());
-    /*commands
-        .spawn(SpriteBundle {
-            sprite: Sprite {
-                color: COLOR_FLOOR,
-                ..Default::default()
-            },
-            transform: Transform {
-                translation: Vec3::new(0.0, WINDOW_BOTTOM_Y + (FLOOR_THICKNESS / 2.0), 0.0),
-                scale: Vec3::new(WINDOW_WIDTH, FLOOR_THICKNESS, 1.0),
-                ..Default::default()
-            },
-            ..Default::default()
-        });*/
-}
-
-fn load_textures() {}
