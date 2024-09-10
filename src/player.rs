@@ -10,8 +10,8 @@ pub struct Player;
 
 #[derive(Clone, Default, Bundle, LdtkEntity)]
 pub struct PlayerBundle {
-    #[sprite_bundle("player.png")]
-    pub sprite_bundle: SpriteBundle,
+    #[sprite_sheet_bundle("Run (32x32).png", 32, 32, 12, 1, 0, 0, 0)]
+    pub sprite_sheet_bundle: LdtkSpriteSheetBundle,
     #[from_entity_instance]
     pub collider_bundle: ColliderBundle,
     pub player: Player,
@@ -29,16 +29,57 @@ pub struct PlayerBundle {
     entity_instance: EntityInstance,
 }
 
+#[derive(Component)]
+struct AnimationConfig {
+    first: usize,
+    last: usize,
+    step: usize,
+}
+
+#[derive(Component, Deref, DerefMut)]
+struct AnimationTimer(Timer);
+
+fn setup(mut commands: Commands) {
+    let animation_indices = AnimationConfig { first: 1, last: 11, step: 1 };
+    commands.spawn((
+        AnimationTimer(Timer::from_seconds(0.1, TimerMode::Repeating)),
+        animation_indices,
+    ));
+}
+
+fn animate_sprite(
+    time: Res<Time>,
+    mut query_atlas: Query<&mut TextureAtlas, With<Player>>,
+    mut query_timer: Query<(&AnimationConfig, &mut AnimationTimer)>,
+) {
+    for mut atlas in &mut query_atlas {
+        for (indices, mut timer) in &mut query_timer {
+            timer.tick(time.delta());
+            if timer.just_finished() {
+                atlas.index = if atlas.index == indices.last {
+                    indices.first
+                } else {
+                    atlas.index + indices.step
+                };
+            }
+        }
+    }
+}
+
 pub fn player_movement(
     input: Res<ButtonInput<KeyCode>>,
-    mut query: Query<(&mut Velocity, &mut Climber, &GroundDetection), With<Player>>, 
+    mut query: Query<(&mut Velocity, &mut Climber, &mut Sprite, &GroundDetection), With<Player>>, 
 ) {
-    for (mut velocity, mut climber, ground_detection) in &mut query {
+    for (mut velocity, mut climber, mut sprite, ground_detection) in &mut query {
         let right = if input.pressed(KeyCode::ArrowRight) { 1. } else { 0. };
         let left = if input.pressed(KeyCode::ArrowLeft) { 1. } else { 0. };
-        let multiplayer = right - left;
+        if left > 0. {
+            sprite.flip_x = true;
+        } else if right > 0. {
+            sprite.flip_x = false;
+        }
 
-        velocity.linvel.x = multiplayer * 200.;
+        velocity.linvel.x = (right - left) * 100.;
 
         if climber.intersecting_climbables.is_empty() {
             climber.climbing = false;
@@ -54,7 +95,7 @@ pub fn player_movement(
         }
 
         if input.just_pressed(KeyCode::Space) && (ground_detection.on_ground || climber.climbing) {
-            velocity.linvel.y = 500.;
+            velocity.linvel.y = 300.;
             climber.climbing = false;
         }
     }
@@ -64,7 +105,9 @@ pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, player_movement)
+        app.add_systems(Startup, setup)
+            .add_systems(Update, player_movement)
+            .add_systems(Update, animate_sprite)
             .register_ldtk_entity::<PlayerBundle>("Player");
     }
 }
